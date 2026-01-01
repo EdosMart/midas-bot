@@ -1,0 +1,13 @@
+{
+    "win_rate": 74.33,
+    "profit": 249.05,
+    "trades": 17.0,
+    "rsi_bullish": 52.0,
+    "rsi_bearish": 46.0,
+    "adx_min": 14.0,
+    "ema_fast": 8.0,
+    "ema_slow": 30.0,
+    "take_profit": 1.8,
+    "stop_mult": 1.1,
+    "score": 1088.9345
+}
