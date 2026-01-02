@@ -116,6 +116,18 @@ def initialize_exchanges():
         send_telegram_message("❌ All exchanges failed to connect. Bot halted.")
         exit()
 
+import threading, os, time
+
+def clear_logs_periodically():
+    while True:
+        try:
+            os.system("truncate -s 0 /var/log/render/service.log")
+        except Exception as e:
+            print(f"Log cleanup failed: {e}")
+        time.sleep(86400)  # Run once every 24 hours
+
+# Run cleanup in a background thread
+threading.Thread(target=clear_logs_periodically, daemon=True).start()
 
 # =====================================================
 # LIVE MONITORING (auto failover)
