@@ -105,21 +105,29 @@ entry_price = 0
 def trade_loop():
     global balance, position, entry_price
 
-    while True:
-        try:
-            from datetime import datetime, timezone
+  while True:
+    try:
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
-timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+        # 🧠 Fetch ticker data
+        ticker = exchange.fetch_ticker(PAIR)
+        if not ticker:
+            print(f"[⚠️] Failed to fetch price data for {PAIR}")
+            time.sleep(INTERVAL)
+            continue
 
-            # Fetch ticker from MEXC (or Bybit if MEXC fails)
-            ticker = None
-            for exchange in [mexc, bybit]:
-                if exchange:
-                    try:
-                        ticker = exchange.fetch_ticker(PAIR)
-                        break
-                    except Exception:
-                        continue
+        price = ticker["last"]
+        print(f"[{timestamp}] {PAIR} price: {price}")
+
+        # 🧠 Perform trading logic here
+        print(f"[{timestamp}] Checking market data...")
+
+        # Wait for next cycle
+        time.sleep(INTERVAL)
+
+    except Exception as e:
+        print(f"[⚠️] Error in loop: {e}")
+        time.sleep(10)
 
             if not ticker:
                 print(f"[⚠️] Failed to fetch price data for {PAIR}")
