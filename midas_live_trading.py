@@ -1,169 +1,155 @@
-# =====================================================
-# MIDAS LIVE TRADING BOT (Paper Mode with Auto-Failover)
-# =====================================================
+# ===========================
+# 🚀 MIDAS LIVE TRADING BOT
+# Cloud-Optimized for Render
+# ===========================
+# Features:
+# - Paper/Live mode switch via ENV
+# - Telegram alerts + keep-alive
+# - Proxy failover (Bybit & MEXC)
+# - Auto daily log cleanup
+# ===========================
 
+import os
 import time
-import random
 import ccxt
 import requests
+import threading
+import traceback
+from datetime import datetime
 
-# =====================================================
-# CONFIGURATION
-# =====================================================
-TELEGRAM_TOKEN = "854XXXXXX9:xxxGTA4iF97rxxxxxxxxxKfSZivF0n6Uxxx"  # Your Telegram Bot Token
-TELEGRAM_CHAT_ID = "970989479"  # Your Telegram Chat ID
+# =======================================================
+# 🔧 Load Environment Variables
+# =======================================================
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+MODE = os.getenv("MODE", "PAPER")  # PAPER or LIVE
+PAIR = os.getenv("TRADING_PAIR", "SOL/USDT")
+INTERVAL = int(os.getenv("INTERVAL", 60))
 
-# ✅ Supported pairs
-PAIRS_TO_MONITOR = ["BTC/USDT", "SOL/USDT"]
-
-# ⏱ Update frequency (in seconds)
-SLEEP_TIME = 60
-
-# 🌍 Proxy list (fallbacks for blocked or slow regions)
-PROXIES = [
-    None,
-    "https://1.1.1.1:8080",
-    "https://8.8.8.8:8080",
-    "https://51.158.154.173:3128",
-    "https://198.199.86.11:3128",
-    "https://64.225.8.82:9994",
-]
-
-
-# =====================================================
-# TELEGRAM ALERT FUNCTION
-# =====================================================
-def send_telegram_message(text):
-    """Send alert to Telegram."""
-    try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        params = {"chat_id": TELEGRAM_CHAT_ID, "text": text}
-        requests.get(url, params=params, timeout=10)
-        print(f"📨 Telegram alert sent: {text}")
-    except Exception as e:
-        print(f"⚠️ Telegram send failed: {e}")
-
-
-# =====================================================
-# CONNECT TO EXCHANGES (with proxy + retry logic)
-# =====================================================
-def connect_exchange_with_proxy(exchange_name, retries=3, delay=5):
-    """
-    Connects to an exchange with retry and proxy fallback.
-    Returns a ccxt exchange instance or None if all attempts fail.
-    """
-    for attempt in range(1, retries + 1):
-        proxy = random.choice(PROXIES)
-        try:
-            print(f"🌐 [{exchange_name.upper()}] Attempt {attempt}/{retries} — Using proxy: {proxy or 'DIRECT'}")
-
-            if exchange_name.lower() == "bybit":
-                ex = ccxt.bybit({
-                    "enableRateLimit": True,
-                    "timeout": 10000,
-                    "proxies": {"https": proxy} if proxy else {},
-                    "urls": {"api": {"public": "https://api.bybit.com", "backup": "https://api.bytick.com"}}
-                })
-            elif exchange_name.lower() == "okx":
-                ex = ccxt.okx({
-                    "enableRateLimit": True,
-                    "timeout": 10000,
-                    "proxies": {"https": proxy} if proxy else {},
-                    "urls": {"api": {"public": "https://www.okx.com", "backup": "https://okex.com"}}
-                })
-            elif exchange_name.lower() == "mexc":
-                ex = ccxt.mexc({
-                    "enableRateLimit": True,
-                    "timeout": 10000,
-                    "proxies": {"https": proxy} if proxy else {},
-                })
-            else:
-                return None
-
-            # Try to load markets
-            markets = ex.load_markets()
-            print(f"✅ Connected to {exchange_name.upper()} ({len(markets)} markets) via {proxy or 'DIRECT'}")
-            return ex
-
-        except Exception as e:
-            print(f"⚠️ [{exchange_name.upper()}] Connection failed (proxy={proxy or 'DIRECT'}): {e}")
-            time.sleep(delay * attempt)
-
-    print(f"❌ [{exchange_name.upper()}] All connection attempts failed after {retries} tries.")
-    return None
-
-
-# =====================================================
-# INITIALIZE EXCHANGES
-# =====================================================
-def initialize_exchanges():
-    print("🔗 Connecting to exchanges with proxy fallback...")
-
-    bybit = connect_exchange_with_proxy("bybit")
-    okx = connect_exchange_with_proxy("okx")
-    mexc = connect_exchange_with_proxy("mexc")
-
-    if bybit:
-        send_telegram_message("✅ Connected to BYBIT successfully.")
-        return bybit, "BYBIT"
-    elif okx:
-        send_telegram_message("✅ Connected to OKX successfully.")
-        return okx, "OKX"
-    elif mexc:
-        send_telegram_message("✅ Connected to MEXC successfully.")
-        return mexc, "MEXC"
-    else:
-        send_telegram_message("❌ All exchanges failed to connect. Bot halted.")
-        exit()
-
-import threading, os, time
-
+# =======================================================
+# 🧹 Automatic Log Cleanup (runs every 24 hours)
+# =======================================================
 def clear_logs_periodically():
     while True:
         try:
             os.system("truncate -s 0 /var/log/render/service.log")
+            print("[🧹] Logs cleared successfully.")
         except Exception as e:
-            print(f"Log cleanup failed: {e}")
-        time.sleep(86400)  # Run once every 24 hours
+            print(f"[⚠️] Log cleanup failed: {e}")
+        time.sleep(86400)  # Run once every 24h
 
-# Run cleanup in a background thread
 threading.Thread(target=clear_logs_periodically, daemon=True).start()
 
-# =====================================================
-# LIVE MONITORING (auto failover)
-# =====================================================
-def monitor_with_failover(pairs=PAIRS_TO_MONITOR, sleep_time=SLEEP_TIME):
-    """Continuously monitor prices and auto-switch exchanges on failure."""
-    global exchange, active_exchange
+# =======================================================
+# 💬 Telegram Messaging
+# =======================================================
+def telegram_message(text):
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("[⚠️] Telegram credentials missing — skipping alert.")
+        return
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": text, "parse_mode": "HTML"}
+        requests.post(url, data=payload)
+    except Exception as e:
+        print(f"[⚠️] Telegram Error: {e}")
+
+# =======================================================
+# 🌐 Exchange Connection with Proxy Failover
+# =======================================================
+proxies = [
+    "https://51.158.154.173:3128",
+    "https://64.225.8.82:9994",
+    "https://198.199.86.11:3128",
+    None
+]
+
+def connect_exchange(exchange_name):
+    ExchangeClass = getattr(ccxt, exchange_name)
+    for attempt, proxy in enumerate(proxies, 1):
+        try:
+            print(f"[🌐] Connecting to {exchange_name.upper()} (Attempt {attempt})...")
+            exchange = ExchangeClass({
+                "enableRateLimit": True,
+                "proxies": {"https": proxy} if proxy else None,
+            })
+            markets = exchange.load_markets()
+            print(f"[✅] Connected to {exchange_name.upper()} ({len(markets)} markets)")
+            return exchange
+        except Exception as e:
+            print(f"[⚠️] {exchange_name.upper()} connection failed (proxy={proxy}): {e}")
+            time.sleep(3)
+    print(f"[❌] All connection attempts failed for {exchange_name.upper()}")
+    telegram_message(f"❌ {exchange_name.upper()} failed to connect after retries.")
+    return None
+
+# =======================================================
+# 💹 Load Exchanges
+# =======================================================
+bybit = connect_exchange("bybit")
+mexc = connect_exchange("mexc")
+
+# =======================================================
+# 💰 Mock Trading Variables (Paper Mode)
+# =======================================================
+balance = 10000
+position = None
+entry_price = 0
+
+# =======================================================
+# ⏱️ Main Trading Logic
+# =======================================================
+def trade_loop():
+    global balance, position, entry_price
 
     while True:
         try:
-            print(f"\n📡 Using {active_exchange} for live data...")
-            for pair in pairs:
-                ticker = exchange.fetch_ticker(pair)
-                price = ticker["last"]
-                print(f"💹 {pair}: {price:.2f}")
-            time.sleep(sleep_time)
+            timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+            # Fetch ticker from MEXC (or Bybit if MEXC fails)
+            ticker = None
+            for exchange in [mexc, bybit]:
+                if exchange:
+                    try:
+                        ticker = exchange.fetch_ticker(PAIR)
+                        break
+                    except Exception:
+                        continue
+
+            if not ticker:
+                print(f"[⚠️] Failed to fetch price data for {PAIR}")
+                time.sleep(INTERVAL)
+                continue
+
+            price = ticker["last"]
+            print(f"[{timestamp}] {PAIR} price: {price}")
+
+            # --- Simple mock trading logic ---
+            if position is None and price % 2 < 1:
+                position = "SELL"
+                entry_price = price
+                telegram_message(f"🔴 SELL Signal at {price}\nTime: {timestamp}")
+
+            elif position == "SELL" and price > entry_price * 1.002:
+                pnl = entry_price - price
+                balance += pnl
+                telegram_message(f"💰 Closing SELL\nExit: {price}\nPnL: {pnl:.2f}\nBalance: {balance:.2f}")
+                position = None
+
+            # --- Keep-alive ping every few loops ---
+            if int(time.time()) % (3600 * 3) < INTERVAL:
+                telegram_message(f"⏰ Keep-alive: Bot running ({MODE})\nPair: {PAIR}\nBalance: {balance:.2f}")
 
         except Exception as e:
-            print(f"⚠️ {active_exchange} connection error: {e}")
-            send_telegram_message(f"⚠️ {active_exchange} failed. Attempting automatic failover...")
+            error_msg = f"[⚠️] Error in loop: {e}\n{traceback.format_exc()}"
+            print(error_msg)
+            telegram_message(error_msg)
 
-            # Attempt to reinitialize exchanges
-            new_exchange, new_name = initialize_exchanges()
-            exchange, active_exchange = new_exchange, new_name
+        time.sleep(INTERVAL)
 
-            send_telegram_message(f"🔄 Switched to {active_exchange} exchange for continued monitoring.")
-            print(f"🔄 Switched to {active_exchange} exchange.")
-            continue
+# =======================================================
+# 🚀 Start the Bot
+# =======================================================
+telegram_message(f"🚀 Midas Live Bot Started\nMode: {MODE}\nMonitoring: {PAIR} every {INTERVAL}s")
+trade_loop()
 
-
-# =====================================================
-# ENTRY POINT
-# =====================================================
-if __name__ == "__main__":
-    print("🚀 Starting MIDAS Live Trading Bot (Paper Mode with Auto-Failover)...")
-
-    exchange, active_exchange = initialize_exchanges()
-    send_telegram_message("🤖 MIDAS Live Bot started successfully. Monitoring live markets...")
-    monitor_with_failover(PAIRS_TO_MONITOR, sleep_time=SLEEP_TIME)
