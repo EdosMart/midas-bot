@@ -32,13 +32,16 @@ INTERVAL = int(os.getenv("INTERVAL", 60))
 def clear_logs_periodically():
     while True:
         try:
-            os.system("truncate -s 0 /var/log/render/service.log")
-            print("[🧹] Logs cleared successfully.")
+            log_path = "/var/log/render/service.log"
+            if os.path.exists(log_path):
+                os.system(f"truncate -s 0 {log_path}")
+                print("[🧹] Logs cleared successfully.")
+            else:
+                print("[ℹ️] Log path not found — skipping cleanup.")
         except Exception as e:
             print(f"[⚠️] Log cleanup failed: {e}")
-        time.sleep(86400)  # Run once every 24h
+        time.sleep(86400)
 
-threading.Thread(target=clear_logs_periodically, daemon=True).start()
 
 # =======================================================
 # 💬 Telegram Messaging
