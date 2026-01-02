@@ -107,7 +107,9 @@ def trade_loop():
 
     while True:
         try:
-            timestamp = datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S")
+            from datetime import datetime, timezone
+
+timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
             # Fetch ticker from MEXC (or Bybit if MEXC fails)
             ticker = None
