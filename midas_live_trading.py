@@ -26,6 +26,7 @@ MODE = os.getenv("MODE", "PAPER")  # PAPER or LIVE
 PAIR = os.getenv("TRADING_PAIR", "SOL/USDT")
 INTERVAL = int(os.getenv("INTERVAL", 60))
 
+
 # =======================================================
 # 🧹 Automatic Log Cleanup (runs every 24 hours)
 # =======================================================
@@ -57,6 +58,7 @@ def telegram_message(text):
     except Exception as e:
         print(f"[⚠️] Telegram Error: {e}")
 
+
 # =======================================================
 # 🌐 Exchange Connection with Proxy Failover
 # =======================================================
@@ -66,6 +68,7 @@ proxies = [
     "https://198.199.86.11:3128",
     None
 ]
+
 
 def connect_exchange(exchange_name):
     ExchangeClass = getattr(ccxt, exchange_name)
@@ -86,6 +89,7 @@ def connect_exchange(exchange_name):
     telegram_message(f"❌ {exchange_name.upper()} failed to connect after retries.")
     return None
 
+
 # =======================================================
 # 💹 Load Exchanges
 # =======================================================
@@ -99,13 +103,15 @@ balance = 10000
 position = None
 entry_price = 0
 
+
 # =======================================================
 # ⏱️ Main Trading Logic
 # =======================================================
 def trade_loop():
     global balance, position, entry_price
 
-  while True:
+
+while True:
     try:
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -129,40 +135,39 @@ def trade_loop():
         print(f"[⚠️] Error in loop: {e}")
         time.sleep(10)
 
-            if not ticker:
-                print(f"[⚠️] Failed to fetch price data for {PAIR}")
-                time.sleep(INTERVAL)
-                continue
+        if not ticker:
+            print(f"[⚠️] Failed to fetch price data for {PAIR}")
+            time.sleep(INTERVAL)
+            continue
 
-            price = ticker["last"]
-            print(f"[{timestamp}] {PAIR} price: {price}")
+        price = ticker["last"]
+        print(f"[{timestamp}] {PAIR} price: {price}")
 
-            # --- Simple mock trading logic ---
-            if position is None and price % 2 < 1:
-                position = "SELL"
-                entry_price = price
-                telegram_message(f"🔴 SELL Signal at {price}\nTime: {timestamp}")
+        # --- Simple mock trading logic ---
+        if position is None and price % 2 < 1:
+            position = "SELL"
+            entry_price = price
+            telegram_message(f"🔴 SELL Signal at {price}\nTime: {timestamp}")
 
-            elif position == "SELL" and price > entry_price * 1.002:
-                pnl = entry_price - price
-                balance += pnl
-                telegram_message(f"💰 Closing SELL\nExit: {price}\nPnL: {pnl:.2f}\nBalance: {balance:.2f}")
-                position = None
+        elif position == "SELL" and price > entry_price * 1.002:
+            pnl = entry_price - price
+            balance += pnl
+            telegram_message(f"💰 Closing SELL\nExit: {price}\nPnL: {pnl:.2f}\nBalance: {balance:.2f}")
+            position = None
 
-            # --- Keep-alive ping every few loops ---
-            if int(time.time()) % (3600 * 3) < INTERVAL:
-                telegram_message(f"⏰ Keep-alive: Bot running ({MODE})\nPair: {PAIR}\nBalance: {balance:.2f}")
+        # --- Keep-alive ping every few loops ---
+        if int(time.time()) % (3600 * 3) < INTERVAL:
+            telegram_message(f"⏰ Keep-alive: Bot running ({MODE})\nPair: {PAIR}\nBalance: {balance:.2f}")
 
-        except Exception as e:
-            error_msg = f"[⚠️] Error in loop: {e}\n{traceback.format_exc()}"
-            print(error_msg)
-            telegram_message(error_msg)
+    except Exception as e:
+        error_msg = f"[⚠️] Error in loop: {e}\n{traceback.format_exc()}"
+        print(error_msg)
+        telegram_message(error_msg)
 
-        time.sleep(INTERVAL)
+    time.sleep(INTERVAL)
 
 # =======================================================
 # 🚀 Start the Bot
 # =======================================================
 telegram_message(f"🚀 Midas Live Bot Started\nMode: {MODE}\nMonitoring: {PAIR} every {INTERVAL}s")
 trade_loop()
-
