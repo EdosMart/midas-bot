@@ -1,116 +1,121 @@
+# ======================================================
+# MIDAS Live Trading Bot (with Auto Failover + Telegram)
+# ======================================================
+# - Supports Paper or Live mode (controlled by ENV var)
+# - Handles network errors gracefully
+# - Auto-failover between Bybit and MEXC
+# - Sends Telegram alerts and hourly heartbeats
+# ======================================================
+
+import os
 import ccxt
 import time
-from datetime import datetime, timezone
+import json
 import requests
-import os
+from datetime import datetime, timezone  # ✅ fixed timezone import
 
-# ==========================
-# CONFIGURATION
-# ==========================
-
-PAIRS_TO_MONITOR = ["SOL/USDT"]
-INTERVAL = 60  # seconds
-EXCHANGES = ["bybit", "mexc"]
-
+# ------------------------------------------------------
+# 🔧 Environment Variables / Config
+# ------------------------------------------------------
+MODE = os.getenv("TRADING_MODE", "PAPER")       # PAPER or LIVE
+PAIR = os.getenv("PAIR", "SOL/USDT")
+INTERVAL = int(os.getenv("INTERVAL", "60"))     # seconds between cycles
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "854XXXXXX9:xxxGTA4iF97rxxxxxxxxxKfSZivF0n6Uxxx")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "970989479")
 
-MODE = os.getenv("MODE", "paper")  # "live" or "paper"
-
-# ==========================
-# TELEGRAM UTILITY
-# ==========================
-
-def send_telegram_message(msg: str):
-    """Send message to Telegram chat"""
+# ------------------------------------------------------
+# 📡 Telegram Helper
+# ------------------------------------------------------
+def send_telegram(message: str):
+    """Send message to Telegram channel."""
     try:
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        data = {"chat_id": TELEGRAM_CHAT_ID, "text": msg}
-        requests.post(url, data=data, timeout=10)
+        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
+        requests.post(url, json=payload, timeout=10)
     except Exception as e:
-        print(f"[⚠️ Telegram Error] {e}")
+        print(f"[⚠️] Telegram send failed: {e}")
 
+# ------------------------------------------------------
+# 🌐 Exchange Connection Handling
+# ------------------------------------------------------
+def connect_exchanges():
+    """Attempt to connect to both Bybit and MEXC."""
+    exchanges = {}
+    for name in ["bybit", "mexc"]:
+        try:
+            ex = getattr(ccxt, name)()
+            markets = ex.load_markets()
+            print(f"✅ Connected to {name.upper()} ({len(markets)} markets)")
+            exchanges[name] = ex
+        except Exception as e:
+            print(f"⚠️ Could not connect to {name.upper()}: {e}")
+    return exchanges
 
-# ==========================
-# EXCHANGE CONNECTION
-# ==========================
+# ------------------------------------------------------
+# 💹 Monitoring Loop (with Failover)
+# ------------------------------------------------------
+def monitor_with_failover(pair=PAIR, interval=INTERVAL):
+    """Continuously monitor prices and auto-switch exchanges on failure."""
+    exchanges = connect_exchanges()
 
-def connect_exchange(name):
-    """Initialize connection to exchange"""
-    try:
-        if name == "bybit":
-            ex = ccxt.bybit()
-        elif name == "mexc":
-            ex = ccxt.mexc()
-        else:
-            raise ValueError(f"Unknown exchange: {name}")
-
-        markets = ex.load_markets()
-        print(f"✅ Connected to {name.upper()} ({len(markets)} markets)")
-        return ex
-    except Exception as e:
-        print(f"⚠️ Failed to connect to {name.upper()}: {e}")
-        return None
-
-
-# ==========================
-# MONITORING LOOP
-# ==========================
-
-def monitor_with_failover(pairs=PAIRS_TO_MONITOR, interval=INTERVAL):
-    """Continuously monitor prices and auto-switch exchanges on failure"""
-    active_exchange = None
-    exchange = None
-
-    # Try connecting to the first available exchange
-    for name in EXCHANGES:
-        exchange = connect_exchange(name)
-        if exchange:
-            active_exchange = name
-            break
-
-    if not exchange:
-        print("❌ Could not connect to any exchange. Exiting.")
-        send_telegram_message("❌ MIDAS BOT: No exchange connections available.")
+    if not exchanges:
+        print("❌ No exchanges available. Halting bot.")
+        send_telegram("❌ MIDAS Bot failed to connect to any exchange. Shutting down.")
         return
 
-    send_telegram_message(f"🚀 MIDAS {MODE.upper()} Bot started on {active_exchange.upper()} — Monitoring {', '.join(pairs)}")
+    active_exchange_name = next(iter(exchanges))
+    exchange = exchanges[active_exchange_name]
+    ticker = None  # ✅ ensures variable is defined
+
+    send_telegram(f"🚀 MIDAS {MODE} Bot started — monitoring {pair} on {active_exchange_name.upper()}.")
+
+    last_heartbeat = time.time()
 
     while True:
         try:
             timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
-            for pair in pairs:
-                try:
-                    ticker = exchange.fetch_ticker(pair)
-                    price = ticker["last"]
-                    print(f"[{timestamp}] {pair}: ${price:.2f}")
-                except Exception as sub_e:
-                    print(f"[⚠️] Failed to fetch {pair} from {active_exchange}: {sub_e}")
+            try:
+                ticker = exchange.fetch_ticker(pair)
+            except Exception as fetch_err:
+                print(f"[⚠️] Fetch error on {active_exchange_name.upper()}: {fetch_err}")
+                ticker = None
+
+            if not ticker:
+                print(f"[⚠️] No data for {pair} on {active_exchange_name.upper()}. Switching exchange...")
+                # Auto-failover
+                other = "mexc" if active_exchange_name == "bybit" else "bybit"
+                if other in exchanges:
+                    active_exchange_name = other
+                    exchange = exchanges[other]
+                    send_telegram(f"[🔁] Switched to {other.upper()} due to data issues.")
+                    continue
+                else:
+                    send_telegram("❌ Both exchanges unreachable. Retrying in 60s...")
+                    time.sleep(60)
+                    continue
+
+            price = ticker["last"]
+            print(f"[{timestamp}] {pair} price: ${price:.2f}")
+
+            # 🧠 Simulated Trade Logic (extend later)
+            print(f"[{timestamp}] Checking {pair} on {active_exchange_name.upper()}...")
+
+            # 🕒 Hourly heartbeat
+            if time.time() - last_heartbeat >= 3600:
+                send_telegram(f"💓 MIDAS {MODE} Bot alive at {timestamp}. Still monitoring {pair}.")
+                last_heartbeat = time.time()
 
             time.sleep(interval)
 
         except Exception as e:
             print(f"[❌] Major error in loop: {e}")
-            send_telegram_message(f"[⚠️] MIDAS BOT ERROR: {e}")
-
-            # Attempt failover
-            for name in EXCHANGES:
-                if name != active_exchange:
-                    exchange = connect_exchange(name)
-                    if exchange:
-                        print(f"[🔁] Switched from {active_exchange.upper()} to {name.upper()}")
-                        active_exchange = name
-                        send_telegram_message(f"🔁 Switched from {active_exchange.upper()} to {name.upper()}")
-                        break
-
+            send_telegram(f"⚠️ MIDAS Bot encountered error: {e}")
             time.sleep(10)
 
-
-# ==========================
-# ENTRY POINT
-# ==========================
-
+# ------------------------------------------------------
+# 🚀 Run the Bot
+# ------------------------------------------------------
 if _name_ == "_main_":
-    print(f"🚀 Starting MIDAS {MODE.upper()} Trading Bot...")
+    print(f"🚀 Starting MIDAS {MODE} Trading Bot (Paper Mode on Render)...")
     monitor_with_failover()
