@@ -116,6 +116,6 @@ def monitor_with_failover(pair=PAIR, interval=INTERVAL):
 # ------------------------------------------------------
 # 🚀 Run the Bot
 # ------------------------------------------------------
-if __name__ == "__main__":
+if _name_ == "_main_":
     print(f"🚀 Starting MIDAS {MODE} Trading Bot (Paper Mode on Render)...")
     monitor_with_failover()
