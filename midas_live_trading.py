@@ -51,72 +51,48 @@ def connect_exchanges():
             print(f"⚠️ Could not connect to {name.upper()}: {e}")
     return exchanges
 
+
 # ------------------------------------------------------
-# 💹 Monitoring Loop (with Failover)
+# 🚀 Run the Bot
 # ------------------------------------------------------
-def monitor_with_failover(pair=PAIR, interval=INTERVAL):
+
+def monitor_with_failover(pairs=[PAIR], interval=INTERVAL):
     """Continuously monitor prices and auto-switch exchanges on failure."""
-    exchanges = connect_exchanges()
-
-    if not exchanges:
-        print("❌ No exchanges available. Halting bot.")
-        send_telegram("❌ MIDAS Bot failed to connect to any exchange. Shutting down.")
-        return
-
-    active_exchange_name = next(iter(exchanges))
-    exchange = exchanges[active_exchange_name]
-    ticker = None  # ✅ ensures variable is defined
-
-    send_telegram(f"🚀 MIDAS {MODE} Bot started — monitoring {pair} on {active_exchange_name.upper()}.")
-
-    last_heartbeat = time.time()
+    global exchange, active_exchange
 
     while True:
         try:
             timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
 
-            try:
-                ticker = exchange.fetch_ticker(pair)
-            except Exception as fetch_err:
-                print(f"[⚠️] Fetch error on {active_exchange_name.upper()}: {fetch_err}")
-                ticker = None
+            for pair in pairs:
+                # 🔄 Loop through both Bybit and MEXC for live comparison
+                for ex_name, ex in exchanges.items():
+                    try:
+                        ticker = ex.fetch_ticker(pair)
+                        price = ticker["last"]
+                        print(f"[{timestamp}] {pair} on {ex_name.upper()}: ${price:.2f}")
 
-            if not ticker:
-                print(f"[⚠️] No data for {pair} on {active_exchange_name.upper()}. Switching exchange...")
-                # Auto-failover
-                other = "mexc" if active_exchange_name == "bybit" else "bybit"
-                if other in exchanges:
-                    active_exchange_name = other
-                    exchange = exchanges[other]
-                    send_telegram(f"[🔁] Switched to {other.upper()} due to data issues.")
-                    continue
-                else:
-                    send_telegram("❌ Both exchanges unreachable. Retrying in 60s...")
-                    time.sleep(60)
-                    continue
+                    except Exception as sub_e:
+                        print(f"[⚠️] Failed to fetch {pair} on {ex_name.upper()}: {sub_e}")
+                        continue
 
-            price = ticker["last"]
-            print(f"[{timestamp}] {pair} price: ${price:.2f}")
-
-            # 🧠 Simulated Trade Logic (extend later)
-            print(f"[{timestamp}] Checking {pair} on {active_exchange_name.upper()}...")
-
-            # 🕒 Hourly heartbeat
-            if time.time() - last_heartbeat >= 3600:
-                send_telegram(f"💓 MIDAS {MODE} Bot alive at {timestamp}. Still monitoring {pair}.")
-                last_heartbeat = time.time()
+            # 💬 Telegram heartbeat
+            send_telegram_message(
+                f"💗 MIDAS {MODE.upper()} Bot alive at {timestamp}. Still monitoring {PAIR} on both BYBIT & MEXC."
+            )
 
             time.sleep(interval)
 
         except Exception as e:
-            print(f"[❌] Major error in loop: {e}")
-            send_telegram(f"⚠️ MIDAS Bot encountered error: {e}")
+            print(f"[❌] Major error in monitor loop: {e}")
+            send_telegram_message(f"[🔥] MIDAS Error: {e}")
             time.sleep(10)
 
+
 # ------------------------------------------------------
-# 🚀 Run the Bot
+# 🧠 Entry Point
 # ------------------------------------------------------
-if __name__ == "__main__":
-    print(f"🚀 Starting MIDAS {MODE} Trading Bot (Paper Mode on Render)...")
+if _name_ == "_main_":
+    print(f"🚀 Starting MIDAS {MODE.upper()} Trading Bot (Paper Mode on Render)...")
     monitor_with_failover()
 
