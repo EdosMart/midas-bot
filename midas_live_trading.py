@@ -6,7 +6,33 @@ import requests
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime, timezone, timedelta
+# ------------------------------------------------------
+# 🩺 MIDAS Startup Health Check
+# ------------------------------------------------------
 
+print("🔍 Running MIDAS startup health check...")
+
+# Check environment variables
+required_env_vars = [
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "GOOGLE_SHEET_NAME",
+    "MODE",
+]
+
+missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+if missing_vars:
+    print(f"❌ Missing environment variables: {', '.join(missing_vars)}")
+else:
+    print("✅ All required environment variables found.")
+
+# Check Google Sheets credentials file
+if os.path.exists("google_key.json"):
+    print("✅ Google Sheets credentials file found.")
+else:
+    print("⚠️ Google Sheets credentials file not found (check Render secrets).")
+
+print("🚀 Continuing to initialize MIDAS bot...\n")
 # ------------------------------------------------------
 # 🌍 Load environment variables
 # ------------------------------------------------------
