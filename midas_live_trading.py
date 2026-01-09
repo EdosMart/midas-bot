@@ -1,4 +1,4 @@
-mport os
+import os
 import ccxt
 import time
 import json
