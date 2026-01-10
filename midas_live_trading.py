@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from google.oauth2.service_account import Credentials
 
 # ------------------------------------------------------
-# ⚙️ Load Configuration
+# ⚙️ Configuration
 # ------------------------------------------------------
 
 MODE = os.getenv("MODE", "Paper")
@@ -17,42 +17,53 @@ INTERVAL = int(os.getenv("INTERVAL", 60))
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 GOOGLE_SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "MIDAS_Trade_Log")
+GOOGLE_CREDS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 
 # ------------------------------------------------------
-# 🔑 Google Sheets Credentials (from Render)
-# ------------------------------------------------------
-
-creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-if not creds_json:
-    raise ValueError("❌ Missing GOOGLE_APPLICATION_CREDENTIALS_JSON in environment")
-
-creds_dict = json.loads(creds_json)
-creds = Credentials.from_service_account_info(
-    creds_dict,
-    scopes=["https://www.googleapis.com/auth/spreadsheets"]
-)
-
-gc = gspread.authorize(creds)
-
-try:
-    sheet = gc.open(GOOGLE_SHEET_NAME).sheet1
-    print(f"✅ Connected to Google Sheet: {GOOGLE_SHEET_NAME}")
-except Exception as e:
-    raise RuntimeError(f"❌ Failed to connect to Google Sheet: {e}")
-
-# ------------------------------------------------------
-# 📤 Telegram Notifier
+# 🧠 Utility Functions
 # ------------------------------------------------------
 
 def send_telegram_message(message: str):
+    """Send messages to Telegram bot"""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️ Telegram credentials not found, skipping message.")
+        print("⚠️ Telegram credentials missing. Skipping message.")
         return
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": message}, timeout=10)
     except Exception as e:
-        print(f"⚠️ Telegram send failed: {e}")
+        print(f"⚠️ Telegram send error: {e}")
+
+# ------------------------------------------------------
+# 🔑 Google Sheets Setup (with auto-retry)
+# ------------------------------------------------------
+
+def connect_google_sheets(max_retries=3):
+    """Try to connect to Google Sheets up to 3 times before failing."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            if not GOOGLE_CREDS_JSON:
+                raise ValueError("Missing GOOGLE_APPLICATION_CREDENTIALS_JSON in environment.")
+
+            creds_dict = json.loads(GOOGLE_CREDS_JSON)
+            creds = Credentials.from_service_account_info(
+                creds_dict,
+                scopes=["https://www.googleapis.com/auth/spreadsheets"]
+            )
+            gc = gspread.authorize(creds)
+            sheet = gc.open(GOOGLE_SHEET_NAME).sheet1
+
+            print(f"✅ Connected to Google Sheet: {GOOGLE_SHEET_NAME}")
+            return sheet
+
+        except Exception as e:
+            print(f"⚠️ Google Sheets connection failed (Attempt {attempt}/{max_retries}): {e}")
+            if attempt < max_retries:
+                time.sleep(5)
+            else:
+                raise RuntimeError(f"❌ Could not connect to Google Sheets after {max_retries} tries.")
+
+sheet = connect_google_sheets()
 
 # ------------------------------------------------------
 # 🧾 Google Sheets Logger
@@ -63,7 +74,7 @@ def log_to_sheet(timestamp, pair, price, note):
         sheet.append_row([timestamp, pair, price, note])
         print(f"✅ Logged to sheet: {timestamp}, {pair}, {price}, {note}")
     except Exception as e:
-        print(f"⚠️ Google Sheets logging failed: {e}")
+        print(f"⚠️ Logging to Google Sheets failed: {e}")
 
 # ------------------------------------------------------
 # 📊 Daily Summary
@@ -72,10 +83,6 @@ def log_to_sheet(timestamp, pair, price, note):
 def send_daily_summary():
     try:
         data = sheet.get_all_records()
-        if not data:
-            send_telegram_message("📊 No trades logged yet.")
-            return
-
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         today_trades = [row for row in data if today in str(row.get("Timestamp", ""))]
 
@@ -83,16 +90,13 @@ def send_daily_summary():
             send_telegram_message("📊 No trades logged today.")
             return
 
-        summary = f"📈 MIDAS Daily Summary ({today})\n"
-        summary += f"Total Logs: {len(today_trades)}\n"
-
         prices = [float(row["Price"]) for row in today_trades if row.get("Price")]
-        if prices:
-            summary += f"Min: {min(prices)} | Max: {max(prices)}\n"
+        min_p, max_p = min(prices), max(prices)
 
-        notes = set(row.get("Note", "") for row in today_trades if row.get("Note"))
-        if notes:
-            summary += f"Notes: {', '.join(notes)}"
+        summary = (
+            f"📈 MIDAS Daily Summary ({today})\n"
+            f"Logs: {len(today_trades)} | Min: {min_p} | Max: {max_p}\n"
+        )
 
         send_telegram_message(summary)
 
@@ -100,7 +104,7 @@ def send_daily_summary():
         print(f"⚠️ Daily summary error: {e}")
 
 # ------------------------------------------------------
-# 💹 Live Trading Monitor (Bybit & MEXC)
+# 💹 Live Monitoring (Bybit + MEXC)
 # ------------------------------------------------------
 
 def monitor_prices():
@@ -108,38 +112,4 @@ def monitor_prices():
     send_telegram_message(f"🤖 MIDAS {MODE.upper()} Bot is now LIVE — tracking {PAIR}")
 
     bybit = ccxt.bybit()
-    mexc = ccxt.mexc()
-
-    while True:
-        try:
-            bybit_price = bybit.fetch_ticker(PAIR)["last"]
-            mexc_price = mexc.fetch_ticker(PAIR)["last"]
-            diff = abs(bybit_price - mexc_price)
-
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"[{timestamp}] BYBIT: {bybit_price} | MEXC: {mexc_price} | Δ {diff:.2f}")
-
-            # Log to Google Sheets
-            log_to_sheet(timestamp, PAIR, bybit_price, f"Spread Δ {diff:.2f}")
-
-            # Heartbeat to Telegram (every 60 minutes)
-            if datetime.now().minute % 60 == 0:
-                send_telegram_message(f"💖 MIDAS Bot alive. {PAIR} Δ {diff:.2f}")
-
-            # Send daily summary at 23:55 UTC
-            now = datetime.now(timezone.utc)
-            if now.hour == 23 and now.minute == 55:
-                send_daily_summary()
-
-            time.sleep(INTERVAL)
-
-        except Exception as e:
-            print(f"⚠️ Monitor loop error: {e}")
-            time.sleep(30)
-
-# ------------------------------------------------------
-# 🚀 Entry Point
-# ------------------------------------------------------
-
-if __name__ == "__main__":
-    monitor_prices()
+    mexc = ccxt.mexc
