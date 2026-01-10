@@ -1,5 +1,7 @@
+import os
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import json
+from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 # =====================================================
@@ -9,18 +11,26 @@ from datetime import datetime
 def log_trade_to_sheets(trade_data):
     """
     Logs trade details to Google Sheets.
-    Requires the Google service account JSON key file shared with the sheet.
+    Loads Google credentials from the Render environment variable
+    GOOGLE_APPLICATION_CREDENTIALS_JSON (not from a file).
     """
+
     try:
         # Define Google Sheets API scope
-        scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-        # Load credentials (ensure your JSON key file is in the same directory)
-        creds = ServiceAccountCredentials.from_json_keyfile_name("midas_service_account.json", scope)
+        # Load credentials from environment (Render)
+        creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+        if not creds_json:
+            raise ValueError("Missing GOOGLE_APPLICATION_CREDENTIALS_JSON in environment variables")
+
+        creds_dict = json.loads(creds_json)
+        creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
         client = gspread.authorize(creds)
 
         # Open your Google Sheet (edit name to match your sheet)
-        sheet = client.open("MidasBotSheetLogger").sheet1
+        sheet_name = os.getenv("GOOGLE_SHEET_NAME", "MIDAS_Trade_Log")
+        sheet = client.open(sheet_name).sheet1
 
         # Add timestamp if not included
         if "time" not in trade_data:
