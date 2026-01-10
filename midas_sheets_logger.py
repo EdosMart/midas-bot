@@ -17,7 +17,10 @@ def log_trade_to_sheets(trade_data):
 
     try:
         # Define Google Sheets API scope
-        SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+        SCOPES = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ]
 
         # Load credentials from environment (Render)
         creds_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
