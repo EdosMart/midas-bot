@@ -31,8 +31,14 @@ creds = Credentials.from_service_account_info(
     creds_dict,
     scopes=["https://www.googleapis.com/auth/spreadsheets"]
 )
+
 gc = gspread.authorize(creds)
-sheet = gc.open(GOOGLE_SHEET_NAME).sheet1
+
+try:
+    sheet = gc.open(GOOGLE_SHEET_NAME).sheet1
+    print(f"✅ Connected to Google Sheet: {GOOGLE_SHEET_NAME}")
+except Exception as e:
+    raise RuntimeError(f"❌ Failed to connect to Google Sheet: {e}")
 
 # ------------------------------------------------------
 # 📤 Telegram Notifier
