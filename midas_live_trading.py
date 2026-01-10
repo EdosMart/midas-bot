@@ -4,11 +4,11 @@ import time
 import json
 import requests
 import gspread
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from google.oauth2.service_account import Credentials
 
 # ------------------------------------------------------
-# ⚙️ Configuration
+# ⚙️ ENVIRONMENT CONFIG
 # ------------------------------------------------------
 
 MODE = os.getenv("MODE", "Paper")
@@ -20,26 +20,26 @@ GOOGLE_SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "MIDAS_Trade_Log")
 GOOGLE_CREDS_JSON = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 
 # ------------------------------------------------------
-# 🧠 Utility Functions
+# 💬 TELEGRAM UTILITY
 # ------------------------------------------------------
 
 def send_telegram_message(message: str):
-    """Send messages to Telegram bot"""
+    """Send messages to Telegram."""
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         print("⚠️ Telegram credentials missing. Skipping message.")
         return
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": message}, timeout=10)
     except Exception as e:
         print(f"⚠️ Telegram send error: {e}")
 
 # ------------------------------------------------------
-# 🔑 Google Sheets Setup (with auto-retry)
+# 🔑 GOOGLE SHEETS CONNECTOR (auto-retry)
 # ------------------------------------------------------
 
 def connect_google_sheets(max_retries=3):
-    """Try to connect to Google Sheets up to 3 times before failing."""
+    """Retry Google Sheets connection before failing."""
     for attempt in range(1, max_retries + 1):
         try:
             if not GOOGLE_CREDS_JSON:
@@ -47,12 +47,10 @@ def connect_google_sheets(max_retries=3):
 
             creds_dict = json.loads(GOOGLE_CREDS_JSON)
             creds = Credentials.from_service_account_info(
-                creds_dict,
-                scopes=["https://www.googleapis.com/auth/spreadsheets"]
+                creds_dict, scopes=["https://www.googleapis.com/auth/spreadsheets"]
             )
             gc = gspread.authorize(creds)
             sheet = gc.open(GOOGLE_SHEET_NAME).sheet1
-
             print(f"✅ Connected to Google Sheet: {GOOGLE_SHEET_NAME}")
             return sheet
 
@@ -63,24 +61,24 @@ def connect_google_sheets(max_retries=3):
             else:
                 raise RuntimeError(f"❌ Could not connect to Google Sheets after {max_retries} tries.")
 
-sheet = connect_google_sheets()
-
 # ------------------------------------------------------
-# 🧾 Google Sheets Logger
+# 🧾 SHEET LOGGER
 # ------------------------------------------------------
 
-def log_to_sheet(timestamp, pair, price, note):
+def log_to_sheet(sheet, timestamp, pair, price, note):
+    """Safely append data to Google Sheets."""
     try:
         sheet.append_row([timestamp, pair, price, note])
         print(f"✅ Logged to sheet: {timestamp}, {pair}, {price}, {note}")
     except Exception as e:
-        print(f"⚠️ Logging to Google Sheets failed: {e}")
+        print(f"⚠️ Google Sheets logging failed: {e}")
 
 # ------------------------------------------------------
-# 📊 Daily Summary
+# 📊 DAILY SUMMARY
 # ------------------------------------------------------
 
-def send_daily_summary():
+def send_daily_summary(sheet):
+    """Summarize daily performance."""
     try:
         data = sheet.get_all_records()
         today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -104,12 +102,75 @@ def send_daily_summary():
         print(f"⚠️ Daily summary error: {e}")
 
 # ------------------------------------------------------
-# 💹 Live Monitoring (Bybit + MEXC)
+# 🔁 FAIL-SAFE RECONNECT SYSTEM
 # ------------------------------------------------------
 
-def monitor_prices():
-    print(f"🚀 Starting MIDAS {MODE.upper()} Bot — monitoring {PAIR}...\n")
-    send_telegram_message(f"🤖 MIDAS {MODE.upper()} Bot is now LIVE — tracking {PAIR}")
+def reconnect_exchange(exchange_name, max_retries=3):
+    """Reconnect exchange with retries."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            ex = getattr(ccxt, exchange_name)()
+            print(f"✅ Connected to {exchange_name.upper()}")
+            return ex
+        except Exception as e:
+            print(f"⚠️ {exchange_name.upper()} reconnect failed (Attempt {attempt}/{max_retries}): {e}")
+            time.sleep(3)
+    raise RuntimeError(f"❌ Failed to reconnect {exchange_name.upper()} after {max_retries} attempts")
 
-    bybit = ccxt.bybit()
-    mexc = ccxt.mexc
+# ------------------------------------------------------
+# 💹 MAIN MONITOR LOOP
+# ------------------------------------------------------
+
+def monitor_forever():
+    """Main trading loop with full recovery."""
+    sheet = None
+    while sheet is None:
+        try:
+            sheet = connect_google_sheets()
+        except Exception as e:
+            print(f"⚠️ Sheets unavailable — retrying in 10s: {e}")
+            time.sleep(10)
+
+    bybit = reconnect_exchange("bybit")
+    mexc = reconnect_exchange("mexc")
+
+    send_telegram_message(f"🤖 MIDAS {MODE.upper()} Bot is now LIVE — monitoring {PAIR}")
+
+    while True:
+        try:
+            timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+            # Get prices from both exchanges
+            bybit_price = bybit.fetch_ticker(PAIR)["last"]
+            mexc_price = mexc.fetch_ticker(PAIR)["last"]
+            diff = abs(bybit_price - mexc_price)
+
+            print(f"[{timestamp}] BYBIT: {bybit_price} | MEXC: {mexc_price} | Δ {diff:.2f}")
+
+            # Log trade
+            log_to_sheet(sheet, timestamp, PAIR, bybit_price, f"Spread Δ {diff:.2f}")
+
+            # Heartbeat every 60 minutes
+            if datetime.now().minute % 60 == 0:
+                send_telegram_message(f"💖 MIDAS Bot heartbeat — {PAIR} Δ {diff:.2f}")
+
+            # Daily summary at 23:55 UTC
+            now = datetime.now(timezone.utc)
+            if now.hour == 23 and now.minute == 55:
+                send_daily_summary(sheet)
+
+            time.sleep(INTERVAL)
+
+        except Exception as e:
+            print(f"🔥 Fatal error in monitor loop: {e}")
+            send_telegram_message(f"🔥 MIDAS error — restarting main loop: {e}")
+            time.sleep(15)
+            monitor_forever()  # self-healing restart
+
+# ------------------------------------------------------
+# 🚀 ENTRY POINT
+# ------------------------------------------------------
+
+if __name__ == "__main__":
+    print("🚀 Starting MIDAS Bot — resilient mode enabled.")
+    monitor_forever()
