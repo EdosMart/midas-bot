@@ -64,7 +64,7 @@ def init_google_sheet():
     """Initialize connection to Google Sheets."""
     try:
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-        creds = Credentials.from_service_account_file("google_key.json", scopes=scopes)
+        creds = Credentials.from_service_account_file("GOOGLE_APPLICATION_CREDENTIALS_JSON", scopes=scopes)
         client = gspread.authorize(creds)
         sheet = client.open("MIDAS_Trade_Log").sheet1
         print("✅ Connected to Google Sheets successfully.")
