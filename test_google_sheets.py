@@ -7,8 +7,10 @@ from google.oauth2.service_account import Credentials
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # Authenticate using Render secret file
-creds = Credentials.from_service_account_file(
-    "google_key.json", scopes=SCOPES
+creds_dict = json.loads(os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON"))
+creds = Credentials.from_service_account_info(
+    creds_dict,
+    scopes=SCOPES
 )
 
 # Open the target Google Sheet by name
