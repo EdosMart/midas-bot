@@ -1,7 +1,15 @@
-ccxt==4.5.28
+# ==============================
+# MIDAS Bot - Cloud Requirements
+# ==============================
+
+# Core
+ccxt==4.3.85
 requests==2.32.3
-gspread==6.1.2
-oauth2client==4.1.3
-python-telegram-bot==21.6
-pandas==2.2.3
-numpy==1.26.4
+
+# Time and system utilities
+python-dateutil==2.9.0.post0
+
+# Optional logging & safety
+urllib3==2.2.2
+
+# (Render will handle Python runtime automatically)
