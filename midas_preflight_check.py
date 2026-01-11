@@ -1,6 +1,8 @@
 import os
 import requests
 import json
+from dotenv import load_dotenv
+load_dotenv()
 
 # ------------------------------------------------------
 # MIDAS Preflight Check (Telegram Connection Only)
@@ -43,3 +45,4 @@ def send_telegram_message(msg: str):
 send_telegram_message("✅ MIDAS Preflight Check: Telegram connection OK.")
 
 print("🎯 MIDAS Preflight Check Complete.")
+exit(0)
