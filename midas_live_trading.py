@@ -1,17 +1,18 @@
-# ================================================================
-# MIDAS LIVE TRADING BOT – CLEAN VERSION (Bybit + Telegram)
-# ================================================================
+# ============================================================
+# 🤖 MIDAS LIVE TRADING BOT (Bybit + Telegram)
+# Clean Production Version (2026)
+# ============================================================
 
 import os
-import ccxt
 import time
+import ccxt
 import requests
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 
-# ================================================================
-# 🌍 Load Environment Variables (works locally + Render)
-# ================================================================
+# ------------------------------------------------------------
+# 🌍 Load Environment Variables (works locally + on Render)
+# ------------------------------------------------------------
 env_path = os.path.join(os.path.dirname(__file__), ".env")
 if os.path.exists(env_path):
     load_dotenv(dotenv_path=env_path)
@@ -19,98 +20,98 @@ if os.path.exists(env_path):
 else:
     print("🌐 Running in hosted environment (Render or similar).")
 
-# ================================================================
-# ⚙️ Configuration
-# ================================================================
+# ------------------------------------------------------------
+# 🔧 Load Configuration from Environment
+# ------------------------------------------------------------
 MODE = os.getenv("MODE", "paper").lower()
-PAIR = os.getenv("PAIR", "SOL/USDT")
-INTERVAL = int(os.getenv("INTERVAL", "60"))
-
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+PAIR = os.getenv("PAIR", "BTC/USDT")
+INTERVAL = int(os.getenv("INTERVAL", "60"))  # seconds between checks
 
 BYBIT_API_KEY = os.getenv("BYBIT_API_KEY")
 BYBIT_SECRET = os.getenv("BYBIT_SECRET")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# ================================================================
-# 💬 Telegram Helper
-# ================================================================
-def send_telegram_message(message: str):
-    """Send message to Telegram."""
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-        print("⚠️ Telegram credentials missing. Cannot send message.")
+# ------------------------------------------------------------
+# 💬 Telegram Messaging Utility
+# ------------------------------------------------------------
+def send_telegram_message(msg: str):
+    """Send a Telegram message using bot token + chat ID."""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        print("⚠️ Telegram credentials not found.")
         return
     try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message}
-        response = requests.post(url, data=payload)
-        if response.status_code == 200:
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": msg}
+        res = requests.post(url, json=payload)
+        if res.status_code == 200:
             print("✅ Telegram message sent successfully.")
         else:
-            print(f"⚠️ Telegram send failed: {response.text}")
+            print(f"⚠️ Telegram error: {res.text}")
     except Exception as e:
-        print(f"⚠️ Telegram error: {e}")
+        print(f"⚠️ Telegram send error: {e}")
 
-# ================================================================
-# 🧩 Initialize Exchange
-# ================================================================
-def init_exchange():
-    """Initialize Bybit connection."""
-    if not BYBIT_API_KEY or not BYBIT_SECRET:
-        print("⚠️ No valid Bybit API credentials found.")
-        return None
+# ------------------------------------------------------------
+# 🌐 Initialize Exchange (Bybit)
+# ------------------------------------------------------------
+def initialize_exchange():
+    """Initialize connection to Bybit."""
     try:
+        if not BYBIT_API_KEY or not BYBIT_SECRET:
+            print("⚠️ No valid Bybit API credentials found.")
+            return None
+
         exchange = ccxt.bybit({
             "apiKey": BYBIT_API_KEY,
             "secret": BYBIT_SECRET,
             "enableRateLimit": True,
+            "options": {"defaultType": "spot"}  # ensures spot trading
         })
+
+        exchange.load_markets()
         print("✅ Bybit exchange initialized successfully.")
         return exchange
     except Exception as e:
-        print(f"❌ Failed to initialize Bybit: {e}")
+        print(f"❌ Exchange initialization failed: {e}")
+        send_telegram_message(f"❌ Exchange initialization failed: {e}")
         return None
 
-# ================================================================
-# 📈 Main Monitor Loop
-# ================================================================
-def monitor_market(exchange):
-    """Continuously fetch and log the latest price."""
+# ------------------------------------------------------------
+# 📈 Simulated Trade Logic (Paper Mode)
+# ------------------------------------------------------------
+def run_trading_loop(exchange):
+    """Simulated simple strategy loop."""
+    print(f"🤖 MIDAS Bot started in {MODE.upper()} mode — tracking {PAIR}")
+    send_telegram_message(f"🤖 MIDAS Bot started in {MODE.upper()} mode — tracking {PAIR}")
+
     while True:
         try:
-            timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             ticker = exchange.fetch_ticker(PAIR)
-            price = ticker.get("last")
-            print(f"[{timestamp}] {PAIR} on BYBIT: ${price:.2f}")
-            time.sleep(INTERVAL)
-        except Exception as e:
-            print(f"[⚠️] Error fetching ticker: {e}")
-            time.sleep(10)
+            price = ticker["last"]
+            print(f"💹 {PAIR} | Price: {price:.4f} | {datetime.now(timezone.utc)}")
 
-# ================================================================
+            # Example: Simple threshold simulation
+            if price > 200:
+                send_telegram_message(f"🟢 {PAIR} price above threshold! ({price:.2f})")
+            elif price < 100:
+                send_telegram_message(f"🔴 {PAIR} price below threshold! ({price:.2f})")
+
+        except Exception as e:
+            print(f"⚠️ Error fetching market data: {e}")
+            send_telegram_message(f"⚠️ Market data error: {e}")
+
+        time.sleep(INTERVAL)
+
+# ------------------------------------------------------------
 # 🚀 Entry Point
-# ================================================================
+# ------------------------------------------------------------
 if __name__ == "__main__":
     print("🚀 Starting MIDAS Trading Bot...")
+    exchange = initialize_exchange()
 
-    # Diagnostic check
-    print("🔍 Checking environment variables...")
-    critical_vars = {
-        "MODE": MODE,
-        "PAIR": PAIR,
-        "TELEGRAM_BOT_TOKEN": "✅" if TELEGRAM_TOKEN else "❌",
-        "TELEGRAM_CHAT_ID": "✅" if TELEGRAM_CHAT_ID else "❌",
-        "BYBIT_API_KEY": "✅" if BYBIT_API_KEY else "❌",
-        "BYBIT_SECRET": "✅" if BYBIT_SECRET else "❌",
-    }
-    for key, val in critical_vars.items():
-        print(f"   {key}: {val}")
-
-    exchange = init_exchange()
-
-    if not exchange:
-        print("❌ Exchange not initialized. Aborting startup.")
-        send_telegram_message("❌ MIDAS startup failed: Bybit not initialized.")
+    if exchange:
+        send_telegram_message("✅ MIDAS bot successfully launched and connected.")
+        run_trading_loop(exchange)
     else:
-        send_telegram_message(f"🤖 MIDAS {MODE.upper()} bot is live, monitoring {PAIR} every {INTERVAL}s.")
-        monitor_market(exchange)
+        print("❌ Exchange not initialized. Aborting startup.")
+        send_telegram_message("❌ Exchange not initialized. Aborting startup.")
