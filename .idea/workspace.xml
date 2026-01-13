@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4da26a31-ca5d-497f-9d0a-00948ecb4bc8" name="Changes" comment="Fix: add gspread and prefer binary wheels for Render build">
+    <list default="true" id="4da26a31-ca5d-497f-9d0a-00948ecb4bc8" name="Changes" comment="Fix: use prebuilt numpy/pandas versions for Render compatibility">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -140,7 +141,23 @@
       <option name="project" value="LOCAL" />
       <updated>1768232490009</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Fix: downgrade numpy/pandas for Render build compatibility">
+      <option name="closed" value="true" />
+      <created>1768282521300</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1768282521300</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Fix: use prebuilt numpy/pandas versions for Render compatibility">
+      <option name="closed" value="true" />
+      <created>1768284228939</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1768284228939</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -150,7 +167,9 @@
     <MESSAGE value="Fix: Load .env before Telegram preflight check" />
     <MESSAGE value="Fix: .env loader + Telegram variable visibility" />
     <MESSAGE value="Fix: add gspread and prefer binary wheels for Render build" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix: add gspread and prefer binary wheels for Render build" />
+    <MESSAGE value="Fix: downgrade numpy/pandas for Render build compatibility" />
+    <MESSAGE value="Fix: use prebuilt numpy/pandas versions for Render compatibility" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix: use prebuilt numpy/pandas versions for Render compatibility" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MIDAS_Engine$main.coverage" NAME="main Coverage Results" MODIFIED="1764290453662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
