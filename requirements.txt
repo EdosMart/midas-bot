@@ -1,9 +1,8 @@
---only-binary=:all:
 --prefer-binary
 
 requests==2.31.0
 python-dotenv==1.0.1
-ccxt==3.1.59
-gspread==5.7.2
-pandas==1.5.3
-numpy==1.23.5
+ccxt==4.2.23
+gspread==6.1.2
+pandas==2.2.3
+numpy==2.1.3
