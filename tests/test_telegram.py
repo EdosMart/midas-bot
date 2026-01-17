@@ -1,6 +1,6 @@
 import requests
 
-BOT_TOKEN = "8545188339:AAEGTA4iF97r6PzP5KPtLKfSZivF0n6U3Q8"
+BOT_TOKEN = "8152460819:AAF_se8ZXk6w2cjwleTrUVPoX3FaCCSesXI"
 CHAT_ID = "970989479"
 MESSAGE = "✅ Telegram connectivity confirmed (Midas Engine)."
 
