@@ -12,7 +12,7 @@ import time
 # =====================================================
 PAIR = "BTCUSDT"
 BOT_FILE = "midas_multiframe_backtest_v2.py"
-BEST_FILE = "midas_best_config.json"
+BEST_FILE = "../midas_best_config.json"
 PROGRESS_FILE = "optimizer_progress_finetune_safe.csv"
 RESULTS_FILE = "midas_finetune_light_results.xlsx"
 

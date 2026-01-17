@@ -4,9 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4da26a31-ca5d-497f-9d0a-00948ecb4bc8" name="Changes" comment="Fix: enforce binary wheels only for Render build">
+    <list default="true" id="4da26a31-ca5d-497f-9d0a-00948ecb4bc8" name="Changes" comment="Fix: updated requirements.txt for Render compatibility">
+      <change afterPath="$PROJECT_DIR$/core/trade_log.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/_init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/core/test_capital_tracker.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/midas_capital_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_capital_tracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/midas_daily_summary.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_daily_summary.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/midas_live_trading.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_live_trading.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/midas_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_capital_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/test_capital_tracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/test_logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/capital_tracker.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/capital_tracker.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/trade_log.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/trade_log.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extras/midas_optimizer_finetune_safe.py" beforeDir="false" afterPath="$PROJECT_DIR$/extras/midas_optimizer_finetune_safe.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +66,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/Lenovo/PycharmProjects/PythonProject/PythonProject/MIDAS_Engine&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -63,6 +77,14 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Lenovo\PycharmProjects\PythonProject\PythonProject\MIDAS_Engine\tests" />
+      <recent name="C:\Users\Lenovo\PycharmProjects\PythonProject\PythonProject\MIDAS_Engine\extras" />
+      <recent name="C:\Users\Lenovo\PycharmProjects\PythonProject\PythonProject\MIDAS_Engine\data" />
+      <recent name="C:\Users\Lenovo\PycharmProjects\PythonProject\PythonProject\MIDAS_Engine\core" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="test_telegram" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MIDAS_Engine" />
@@ -77,7 +99,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_telegram.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\Lenovo\PycharmProjects\PythonProject\PythonProject\MIDAS_Engine\tests\test_telegram.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -165,7 +187,15 @@
       <option name="project" value="LOCAL" />
       <updated>1768285424219</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Fix: updated requirements.txt for Render compatibility">
+      <option name="closed" value="true" />
+      <created>1768311527074</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1768311527074</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -178,7 +208,8 @@
     <MESSAGE value="Fix: downgrade numpy/pandas for Render build compatibility" />
     <MESSAGE value="Fix: use prebuilt numpy/pandas versions for Render compatibility" />
     <MESSAGE value="Fix: enforce binary wheels only for Render build" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix: enforce binary wheels only for Render build" />
+    <MESSAGE value="Fix: updated requirements.txt for Render compatibility" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix: updated requirements.txt for Render compatibility" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/MIDAS_Engine$main.coverage" NAME="main Coverage Results" MODIFIED="1764290453662" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
