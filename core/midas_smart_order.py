@@ -1,110 +1,112 @@
-# ============================================================
-# 🧠 MIDAS SMART ORDER MODULE
-# Handles order execution, stop loss, and take profit logic
-# ============================================================
-
-import os
 import time
-import json
-import requests
 from datetime import datetime
-from dotenv import load_dotenv
-import ccxt
-from midas_logger import log_trade
-
+from core.midas_logger import log_trade
+from core.midas_capital_tracker import update_capital
 
 # ============================================================
-# ⚙️ LOAD ENVIRONMENT VARIABLES
+# ⚙️ SMART ORDER MODULE – MEXC PAPER TRADING ENGINE
 # ============================================================
-env_path = os.path.join(os.path.dirname(__file__), ".env")
-if os.path.exists(env_path):
-    load_dotenv(dotenv_path=env_path)
 
-MODE = os.getenv("MODE", "paper").lower()
-EXCHANGE_NAME = os.getenv("EXCHANGE", "bybit").lower()
-PAIR = os.getenv("PAIR", "XRP/USDT")
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+def execute_trade(exchange, pair, signal, balance, risk_per_trade=0.02,
+                  take_profit_pct=0.02, stop_loss_pct=0.01, trailing_stop_pct=0.02,
+                  paper_mode=True):
+    """
+    Executes a simulated or live trade based on signal.
+    Returns a trade summary dictionary.
+    """
 
-STOP_LOSS_PCT = 0.02
-TAKE_PROFIT_PCT = 0.036
-TRAILING_STOP_PCT = 0.015
-
-
-# ============================================================
-# 🔗 INITIALIZE EXCHANGE
-# ============================================================
-def get_exchange():
-    """Initialize CCXT exchange connection."""
-    exchange_class = getattr(ccxt, EXCHANGE_NAME)
-    exchange = exchange_class({
-        "apiKey": os.getenv("API_KEY"),
-        "secret": os.getenv("API_SECRET"),
-        "enableRateLimit": True,
-    })
-    return exchange
-
-
-exchange = get_exchange()
-
-
-# ============================================================
-# 💬 TELEGRAM UPDATES
-# ============================================================
-def send_telegram_message(msg):
-    """Send message to Telegram bot."""
     try:
-        if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-            return
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        payload = {"chat_id": TELEGRAM_CHAT_ID, "text": msg}
-        requests.post(url, json=payload)
+        # --- Define direction ---
+        side = signal.get("trend", "neutral")
+        price = signal.get("price", 0)
+
+        if side not in ["bullish", "bearish"]:
+            print("⚠️ No clear signal, skipping trade.")
+            return None
+
+        # --- Calculate position size ---
+        position_size = balance * risk_per_trade / stop_loss_pct
+        trade_value = balance * risk_per_trade
+        print(f"📊 Position size: ${trade_value:.2f} ({risk_per_trade*100:.1f}% risk)")
+
+        # --- Simulated price movement ---
+        if paper_mode:
+            entry_price = price or exchange.fetch_ticker(pair)["last"]
+            take_profit = entry_price * (1 + take_profit_pct if side == "bullish" else 1 - take_profit_pct)
+            stop_loss = entry_price * (1 - stop_loss_pct if side == "bullish" else 1 + stop_loss_pct)
+
+            print(f"🎯 Entry: {entry_price:.4f} | TP: {take_profit:.4f} | SL: {stop_loss:.4f}")
+
+            # --- Simulate outcome ---
+            outcome = "win" if signal.get("rsi", 50) > 45 else "loss"
+            profit_pct = take_profit_pct if outcome == "win" else -stop_loss_pct
+            profit = balance * profit_pct
+
+            # --- Log the trade ---
+            trade_data = {
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "pair": pair,
+                "side": side,
+                "entry": entry_price,
+                "take_profit": take_profit,
+                "stop_loss": stop_loss,
+                "outcome": outcome,
+                "profit": profit,
+                "balance_before": balance,
+                "balance_after": balance + profit
+            }
+
+            log_trade(trade_data)
+            update_capital(profit, is_win=(outcome == "win"))
+            print(f"✅ {outcome.upper()} | New balance: ${balance + profit:.2f}")
+
+            return trade_data
+
+        # --- Live trading (if paper_mode=False) ---
+        else:
+            entry_price = exchange.fetch_ticker(pair)["last"]
+            order_side = "buy" if side == "bullish" else "sell"
+            order = exchange.create_market_order(pair, order_side, position_size)
+
+            log_trade({
+                "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+                "pair": pair,
+                "side": order_side,
+                "price": entry_price,
+                "size": position_size,
+                "result": "executed"
+            })
+            print(f"✅ Live order executed: {order_side} {pair} @ {entry_price}")
+
+            return order
+
     except Exception as e:
-        print(f"[⚠️] Telegram send error: {e}")
-
-
-# ============================================================
-# 🚀 EXECUTE TRADE
-# ============================================================
-def execute_trade(direction, pair, size, price):
-    """Execute a trade order — live or paper."""
-    try:
-        if MODE == "paper":
-            print(f"[📘 PAPER TRADE] {direction.upper()} {size:.3f} {pair} @ {price:.4f}")
-            send_telegram_message(f"[📘 PAPER TRADE] {direction.upper()} {size:.3f} {pair} @ {price:.4f}")
-            return {"status": "simulated", "price": price, "size": size}
-
-        # LIVE trade
-        order_type = "market"
-        side = "buy" if direction == "buy" else "sell"
-        order = exchange.create_order(pair, order_type, side, size)
-        print(f"✅ LIVE ORDER placed: {order}")
-        send_telegram_message(f"✅ LIVE ORDER placed: {direction.upper()} {pair} {size}")
-        return order
-
-    except Exception as e:
-        print(f"[❌] Trade execution failed: {e}")
-        send_telegram_message(f"[❌] Trade execution failed: {e}")
+        print(f"⚠️ Trade execution error: {e}")
         return None
 
 
 # ============================================================
-# 🧩 EVALUATE TRADE EXIT CONDITIONS
+# 🧮 HELPER FUNCTION – TRAILING STOP SIMULATION
 # ============================================================
-def evaluate_trade_exit(direction, entry_price, current_price):
-    """Check stop loss, take profit, or trailing conditions."""
-    try:
-        if direction == "buy":
-            stop_loss = entry_price * (1 - STOP_LOSS_PCT)
-            take_profit = entry_price * (1 + TAKE_PROFIT_PCT)
 
-            if current_price <= stop_loss:
-                return "stopped"
-            elif current_price >= take_profit:
-                return "take_profit"
+def simulate_trailing_stop(entry_price, side, trailing_stop_pct=0.02, steps=10):
+    """
+    Simulates a trailing stop for demonstration or backtesting.
+    """
+    direction = 1 if side == "bullish" else -1
+    highest_price = entry_price
+    trailing_stop = entry_price * (1 - trailing_stop_pct * direction)
 
-        elif direction == "sell":
-            stop_loss = entry_price * (1 + STOP_LOSS_PCT)
-            take_profit = entry_price * (1 - TAKE_PROFIT_PCT)
+    for i in range(steps):
+        current_price = entry_price * (1 + direction * 0.005 * i)
+        if direction == 1 and current_price > highest_price:
+            highest_price = current_price
+            trailing_stop = highest_price * (1 - trailing_stop_pct)
+        elif direction == -1 and current_price < highest_price:
+            highest_price = current_price
+            trailing_stop = highest_price * (1 + trailing_stop_pct)
 
-            if cu…
+        print(f"Step {i+1}: Price={current_price:.4f}, TrailingStop={trailing_stop:.4f}")
+        time.sleep(0.1)
+
+    print("🔚 Trailing stop simulation complete.")
