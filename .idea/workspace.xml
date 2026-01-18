@@ -5,21 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4da26a31-ca5d-497f-9d0a-00948ecb4bc8" name="Changes" comment="Fix: updated requirements.txt for Render compatibility">
-      <change afterPath="$PROJECT_DIR$/core/trade_log.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/_init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/core/test_capital_tracker.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_capital_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_capital_tracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_daily_summary.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_daily_summary.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/__init__.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/core/midas_live_trading.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_live_trading.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_logger.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_capital_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/test_capital_tracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/test_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/test_logger.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/capital_tracker.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/capital_tracker.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/trade_log.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/trade_log.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/extras/midas_optimizer_finetune_safe.py" beforeDir="false" afterPath="$PROJECT_DIR$/extras/midas_optimizer_finetune_safe.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/midas_preflight_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_preflight_check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_capital_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_capital_tracker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/test_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/__init__.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

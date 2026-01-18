@@ -1,36 +1,34 @@
-# ============================================================
-# 🚀 MIDAS PREFLIGHT CHECK
-# Telegram Connection + Environment Verification
-# ============================================================
-
 import os
+import sys
 import requests
 from dotenv import load_dotenv
 
-# ------------------------------------------------------------
-# 🌍 Load Environment Variables (works for local + Render)
-# ------------------------------------------------------------
-env_path = os.path.join(os.path.dirname(__file__), ".env")
+# === Ensure Python finds the project root ===
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# === Load .env file (both locally and on Render) ===
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+
 if os.path.exists(env_path):
     load_dotenv(dotenv_path=env_path)
     print("✅ Local .env file loaded successfully.")
 else:
     print("🌐 Running in hosted environment (Render or similar).")
-print("🔍 TELEGRAM_BOT_TOKEN =", os.getenv("TELEGRAM_BOT_TOKEN"))
-print("🔍 TELEGRAM_CHAT_ID =", os.getenv("TELEGRAM_CHAT_ID"))
-# ------------------------------------------------------------
-# 🧩 Start Health Check
-# ------------------------------------------------------------
-print("\n🚀 MIDAS Preflight Check Starting...\n")
 
-# Required environment variables
-required_vars = ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "PAIR", "MODE"]
-missing = [var for var in required_vars if not os.getenv(var)]
+# === Verify environment variables ===
+REQUIRED_VARS = [
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "PAIR",
+    "MODE",
+]
+
+missing = [v for v in REQUIRED_VARS if not os.getenv(v)]
 
 if missing:
     print(f"❌ Missing environment variables: {', '.join(missing)}")
 else:
-    print("✅ All required environment variables found.\n")
+    print("✅ All required environment variables found.")
 
 # ------------------------------------------------------------
 # 💬 Test Telegram Bot

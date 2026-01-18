@@ -1,123 +1,173 @@
+# ============================================================
+# MIDAS LIVE TRADING ENGINE 🦾
+# Supports: MEXC, BYBIT, OKX (active: MEXC)
+# Mode: Paper or Live (controlled via MODE)
+# ============================================================
+
 import os
-import ccxt
 import time
-import json
-import requests
+import ccxt
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from core.midas_capital_tracker import update_capital, load_capital, reset_daily_capital, log_sync_event
 
-# --------------------------------------------------
-# 🧩 Load Environment Variables
-# --------------------------------------------------
-load_dotenv()
+# Internal imports
+from core.midas_logger import log_trade
+from core.midas_capital_tracker import update_capital, load_capital
+from core.midas_telegram import send_telegram_message
+from core.midas_smart_order import execute_trade
 
+# ============================================================
+# 🌍 ENVIRONMENT SETUP
+# ============================================================
+env_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(env_path):
+    load_dotenv(dotenv_path=env_path)
+    print("✅ Local .env file loaded successfully.")
+else:
+    print("🌐 Running in hosted environment (Render or similar).")
+
+# ============================================================
+# ⚙️ CONFIGURATION
+# ============================================================
+EXCHANGE_NAME = os.getenv("EXCHANGE", "mexc").lower()
+PAIR = os.getenv("PAIR", "XRP/USDT")
+MODE = os.getenv("MODE", "paper").lower()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
-MODE = os.getenv("MODE", "paper").lower()
-PAIR = os.getenv("PAIR", "XRP/USDT")
+SMART_COMPOUND = os.getenv("SMART_COMPOUND", "true").lower() == "true"
 
-MEXC_API_KEY = os.getenv("MEXC_API_KEY")
-MEXC_SECRET = os.getenv("MEXC_SECRET")
+RISK_PER_TRADE = 0.02         # 2% risk per trade
+STOP_LOSS_PERCENT = 0.01      # 1% stop loss
+TAKE_PROFIT_PERCENT = 0.02    # 2% take profit
+TRAILING_STOP_PERCENT = 0.02  # Optional trailing stop
+INTERVAL_SECONDS = 60         # 1 minute loop
+MAX_DAILY_LOSS = 0.015        # 1.5% daily cap
 
-# --------------------------------------------------
-# 📢 Telegram Messaging
-# --------------------------------------------------
-def send_telegram_message(msg):
-    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-        try:
-            requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": msg})
-        except Exception as e:
-            print(f"⚠️ Telegram send error: {e}")
+starting_balance = 100.0  # Default paper balance
 
-# --------------------------------------------------
-# ⚙️ MEXC Exchange Setup
-# --------------------------------------------------
+# ============================================================
+# 🔗 EXCHANGE CONNECTION
+# ============================================================
 def get_exchange(name):
-    """Initializes exchange safely — converts name to lowercase for ccxt."""
+    """Initialize exchange dynamically."""
     try:
-        name = name.lower()  # ✅ ensure lowercase
         exchange_class = getattr(ccxt, name)
-        return exchange_class({
+        exchange = exchange_class({
             "apiKey": os.getenv(f"{name.upper()}_API_KEY"),
             "secret": os.getenv(f"{name.upper()}_SECRET"),
             "enableRateLimit": True
         })
+        print(f"✅ Connected to {name.upper()} exchange successfully.")
+        return exchange
     except AttributeError:
-        raise ValueError(f"❌ Unsupported exchange: {name} (must match ccxt lowercase name)")
+        raise ValueError(f"❌ Unsupported exchange: {name}")
 
+exchange = get_exchange(EXCHANGE_NAME)
 
-# --------------------------------------------------
-# 📊 Balance Sync (Live Mode)
-# --------------------------------------------------
-def sync_balance(exchange):
-    if MODE != "live":
-        return
-    try:
-        balance_info = exchange.fetch_balance()
-        mexc_balance = balance_info["total"].get("USDT", 0)
-        capital = load_capital()
-        local_balance = capital["current_balance"]
-        diff = abs(mexc_balance - local_balance) / local_balance * 100
+# ============================================================
+# 💰 SMART COMPOUNDING TOGGLE
+# ============================================================
+if SMART_COMPOUND:
+    current_capital_data = load_capital()
+    current_balance = current_capital_data.get("current_balance", starting_balance)
+    trade_size = current_balance * RISK_PER_TRADE
+    print(f"🧮 Smart compounding active: using ${trade_size:.2f} per trade (based on current balance ${current_balance:.2f})")
+else:
+    trade_size = starting_balance * RISK_PER_TRADE
+    print(f"📊 Fixed trade size mode: using ${trade_size:.2f} per trade")
 
-        if diff > 1:
-            capital["current_balance"] = mexc_balance
-            update_capital(0, is_win=True)
-            log_sync_event("MEXC", "synced")
-            send_telegram_message("🔄 Balance synced successfully with MEXC.")
-    except Exception as e:
-        print(f"⚠️ Balance sync failed: {e}")
+# ============================================================
+# 📊 TELEGRAM STARTUP MESSAGE
+# ============================================================
+send_telegram_message(
+    f"🚀 MIDAS Trading Bot started successfully on {EXCHANGE_NAME.upper()} ({MODE.upper()} MODE) — monitoring {PAIR}"
+)
 
-# --------------------------------------------------
-# 📈 Trade Signal Simulation
-# --------------------------------------------------
-def simulate_signal():
-    """Mock signal generator for testing."""
+# ============================================================
+# 🧠 TRADE SIGNAL ANALYSIS (SIMPLE LOGIC)
+# ============================================================
+def analyze_signal():
+    """Placeholder signal generator (replace with AI/indicator logic)."""
     import random
-    direction = random.choice(["buy", "sell", None])
-    return direction
+    return random.choice(["buy", "sell", None])
 
-# --------------------------------------------------
-# 🔁 Main Loop
-# --------------------------------------------------
-print(f"🚀 MIDAS Trading Bot started in {MODE.upper()} mode — Monitoring {PAIR}")
-exchange = init_exchange()
-capital = load_capital()
-send_telegram_message(f"🤖 MIDAS Bot active — {MODE.upper()} mode running.")
-
-daily_loss_limit = 0.015 * capital["starting_balance"]
+# ============================================================
+# 🔁 MAIN TRADING LOOP
+# ============================================================
+daily_loss = 0.0
+trades_today = 0
+daily_start_date = datetime.now().strftime("%Y-%m-%d")
 
 while True:
     try:
-        if datetime.utcnow().hour == 0:
-            reset_daily_capital()
+        # Reset daily counters at midnight
+        if datetime.now().strftime("%Y-%m-%d") != daily_start_date:
+            daily_start_date = datetime.now().strftime("%Y-%m-%d")
+            daily_loss = 0.0
+            trades_today = 0
+            print("🔄 New trading day detected. Counters reset.")
 
-        signal = simulate_signal()
+        signal = analyze_signal()
+
         if not signal:
-            time.sleep(60)
+            print("🤖 No valid trade signal. Waiting...")
+            time.sleep(INTERVAL_SECONDS)
             continue
 
-        balance = capital["current_balance"]
-        risk_per_trade = balance * 0.02
-        stop_loss = balance * 0.01
-        potential_loss = -stop_loss
-        potential_profit = risk_per_trade * 2
+        ticker = exchange.fetch_ticker(PAIR)
+        price = ticker["last"]
 
+        # Daily loss protection
+        if daily_loss <= -MAX_DAILY_LOSS * starting_balance:
+            send_telegram_message("🛑 Daily loss limit reached. Halting trades for today.")
+            print("🛑 Daily loss cap triggered. Trading paused until next day.")
+            time.sleep(600)
+            continue
+
+        # Trade direction setup
         if signal == "buy":
-            update_capital(potential_profit, is_win=True)
-            send_telegram_message("🟢 Simulated BUY — +2% profit target hit.")
-        elif signal == "sell":
-            update_capital(potential_loss, is_win=False)
-            send_telegram_message("🔴 Simulated SELL — -1% stop-loss triggered.")
+            side = "buy"
+            take_profit = price * (1 + TAKE_PROFIT_PERCENT)
+            stop_loss = price * (1 - STOP_LOSS_PERCENT)
+        else:
+            side = "sell"
+            take_profit = price * (1 - TAKE_PROFIT_PERCENT)
+            stop_loss = price * (1 + STOP_LOSS_PERCENT)
 
-        capital = load_capital()
-        if capital["total_loss"] >= daily_loss_limit:
-            send_telegram_message("⛔ Daily loss cap reached (1.5%). Trading paused until next reset.")
-            break
+        # Execute trade
+        execute_trade({
+            "pair": PAIR,
+            "side": side,
+            "price": price,
+            "take_profit": take_profit,
+            "stop_loss": stop_loss,
+            "size": trade_size,
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        })
 
-        time.sleep(120)
+        # Update capital tracker (simulated)
+        profit = trade_size * TAKE_PROFIT_PERCENT if signal == "buy" else -trade_size * STOP_LOSS_PERCENT
+        update_capital(profit, is_win=profit > 0)
+        daily_loss += profit
+        trades_today += 1
+
+        log_trade({
+            "pair": PAIR,
+            "side": side,
+            "price": price,
+            "take_profit": take_profit,
+            "stop_loss": stop_loss,
+            "profit": profit,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "result": "win" if profit > 0 else "loss"
+        })
+
+        send_telegram_message(
+            f"📈 Trade executed: {side.upper()} {PAIR}\n💰 Profit: ${profit:.2f}\n📊 Daily P/L: ${daily_loss:.2f}"
+        )
+
+        time.sleep(INTERVAL_SECONDS)
 
     except Exception as e:
-        print(f"⚠️ Trading loop error: {e}")
-        time.sleep(60)
+        print(f"⚠️ Error in trading loop: {e}")
+        time.sleep(30)
