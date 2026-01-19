@@ -1,0 +1,131 @@
+{
+    "date": "2026-01-19",
+    "total_trades": 0,
+    "wins": 0,
+    "losses": 0,
+    "total_profit": 0.0,
+    "total_loss": 0.0,
+    "balance_end": 100.0,
+    "trailing_events": [
+        {
+            "timestamp": "01:27:22",
+            "pair": "XRP/USDT",
+            "price": 1.0,
+            "trailing_stop": 0.98
+        },
+        {
+            "timestamp": "01:27:25",
+            "pair": "XRP/USDT",
+            "price": 1.005,
+            "trailing_stop": 0.9848999999999999
+        },
+        {
+            "timestamp": "01:27:28",
+            "pair": "XRP/USDT",
+            "price": 1.01,
+            "trailing_stop": 0.9898
+        },
+        {
+            "timestamp": "01:27:31",
+            "pair": "XRP/USDT",
+            "price": 1.015,
+            "trailing_stop": 0.9946999999999999
+        },
+        {
+            "timestamp": "01:27:34",
+            "pair": "XRP/USDT",
+            "price": 1.02,
+            "trailing_stop": 0.9996
+        },
+        {
+            "timestamp": "01:27:37",
+            "pair": "XRP/USDT",
+            "price": 1.025,
+            "trailing_stop": 1.0045
+        },
+        {
+            "timestamp": "01:27:39",
+            "pair": "XRP/USDT",
+            "price": 1.03,
+            "trailing_stop": 1.0094
+        },
+        {
+            "timestamp": "01:27:42",
+            "pair": "XRP/USDT",
+            "price": 1.035,
+            "trailing_stop": 1.0143
+        },
+        {
+            "timestamp": "01:27:44",
+            "pair": "XRP/USDT",
+            "price": 1.04,
+            "trailing_stop": 1.0192
+        },
+        {
+            "timestamp": "01:27:47",
+            "pair": "XRP/USDT",
+            "price": 1.045,
+            "trailing_stop": 1.0241
+        },
+        {
+            "timestamp": "01:39:34",
+            "pair": "XRP/USDT",
+            "price": 1.0,
+            "trailing_stop": 0.98
+        },
+        {
+            "timestamp": "01:39:37",
+            "pair": "XRP/USDT",
+            "price": 1.005,
+            "trailing_stop": 0.9848999999999999
+        },
+        {
+            "timestamp": "01:39:40",
+            "pair": "XRP/USDT",
+            "price": 1.01,
+            "trailing_stop": 0.9898
+        },
+        {
+            "timestamp": "01:39:42",
+            "pair": "XRP/USDT",
+            "price": 1.015,
+            "trailing_stop": 0.9946999999999999
+        },
+        {
+            "timestamp": "01:39:45",
+            "pair": "XRP/USDT",
+            "price": 1.02,
+            "trailing_stop": 0.9996
+        },
+        {
+            "timestamp": "01:39:47",
+            "pair": "XRP/USDT",
+            "price": 1.025,
+            "trailing_stop": 1.0045
+        },
+        {
+            "timestamp": "01:39:51",
+            "pair": "XRP/USDT",
+            "price": 1.03,
+            "trailing_stop": 1.0094
+        },
+        {
+            "timestamp": "01:39:53",
+            "pair": "XRP/USDT",
+            "price": 1.035,
+            "trailing_stop": 1.0143
+        },
+        {
+            "timestamp": "01:39:56",
+            "pair": "XRP/USDT",
+            "price": 1.04,
+            "trailing_stop": 1.0192
+        },
+        {
+            "timestamp": "01:39:58",
+            "pair": "XRP/USDT",
+            "price": 1.045,
+            "trailing_stop": 1.0241
+        }
+    ]
+}

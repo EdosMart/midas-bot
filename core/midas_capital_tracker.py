@@ -1,72 +1,68 @@
-import os
 import json
+import os
 from datetime import datetime
 
-CAPITAL_FILE = os.path.join("data", "capital_tracker.json")
+# File to store current capital
+CAPITAL_FILE = os.path.join(os.path.dirname(__file__), "capital_tracker.json")
 
-def _init_capital():
-    """Initializes the capital file if it doesn't exist."""
-    return {
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "starting_balance": 100.0,
-        "current_balance": 100.0,
-        "total_profit": 0.0,
-        "total_loss": 0.0,
-        "win_trades": 0,
-        "loss_trades": 0,
-        "total_trades": 0
-    }
 
 def load_capital():
-    """Loads existing capital data or initializes a new record."""
-    if not os.path.exists(CAPITAL_FILE) or os.path.getsize(CAPITAL_FILE) == 0:
-        capital = _init_capital()
-        save_capital(capital)
-        return capital
-    with open(CAPITAL_FILE, "r") as f:
-        return json.load(f)
+    """
+    Loads the last known capital balance from file.
+    If not found, initializes with 100 (default starting balance).
+    """
+    if os.path.exists(CAPITAL_FILE):
+        try:
+            with open(CAPITAL_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict) and "capital" in data:
+                    return data["capital"]
+        except json.JSONDecodeError:
+            print("⚠️ Corrupted capital file detected. Resetting...")
+    # Default capital if missing or broken
+    save_capital(100.0)
+    return 100.0
 
-def save_capital(data):
-    """Saves capital data to file."""
-    os.makedirs(os.path.dirname(CAPITAL_FILE), exist_ok=True)
-    with open(CAPITAL_FILE, "w") as f:
-        json.dump(data, f, indent=4)
 
-def update_capital(profit, is_win=True):
-    """Updates capital based on trade outcome."""
-    capital = load_capital()
-    capital["timestamp"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    capital["total_trades"] += 1
-    capital["current_balance"] += profit
+def save_capital(capital):
+    """Saves the current capital value safely."""
+    with open(CAPITAL_FILE, "w", encoding="utf-8") as f:
+        json.dump({"capital": round(float(capital), 2)}, f, indent=4)
+    print(f"💰 Capital saved: ${capital:.2f}")
 
-    if is_win:
-        capital["total_profit"] += profit
-        capital["win_trades"] += 1
-    else:
-        capital["total_loss"] += abs(profit)
-        capital["loss_trades"] += 1
+
+def update_capital(result: str, profit_pct: float, balance=None):
+    """
+    Updates capital based on trade result (WIN / LOSS / BREAKEVEN).
+    Automatically saves new balance to JSON.
+    """
+    capital = load_capital() if balance is None else balance
+
+    if result == "WIN":
+        capital *= (1 + profit_pct)
+    elif result == "LOSS":
+        capital *= (1 - profit_pct)
+    elif result == "BREAKEVEN":
+        pass  # no change
 
     save_capital(capital)
-    print(f"💰 Capital updated — New balance: ${capital['current_balance']:.2f}")
+    print(f"💹 Updated capital after {result}: ${capital:.2f}")
     return capital
+
 
 def reset_daily_capital():
-    """Resets capital data for a new day (retains total values)."""
-    capital = load_capital()
-    capital["starting_balance"] = capital["current_balance"]
-    capital["timestamp"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    save_capital(capital)
-    print("🕛 Daily capital reset completed.")
-    return capital
+    """Resets daily capital at midnight (or testing start)."""
+    base = load_capital()
+    print(f"🕛 Daily capital reset completed. Starting with: ${base:.2f}")
+    return base
 
-def log_sync_event(source="MEXC", status="synced"):
-    """Logs when a capital sync happens."""
+
+if __name__ == "__main__":
+    print("🔧 Testing capital tracker...")
+
     capital = load_capital()
-    event = {
-        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        "source": source,
-        "status": status,
-        "balance": capital["current_balance"]
-    }
-    print(f"🔄 Balance {status} from {source} — ${capital['current_balance']:.2f}")
-    return event
+    print(f"Starting capital: ${capital:.2f}")
+
+    update_capital("WIN", 0.02)
+    update_capital("LOSS", 0.015)
+    reset_daily_capital()

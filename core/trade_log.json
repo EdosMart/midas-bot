@@ -30,5 +30,717 @@
         "price": 0.5471,
         "size": 25,
         "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:22:59",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 0.5471,
+        "size": 25.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:37:48",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.005,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:37:52",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.01,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:37:56",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.015,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:38:01",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.02,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:38:05",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.025,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:38:09",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.03,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:38:13",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.035,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:38:17",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.04,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:38:21",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.045,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 02:38:25",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.05,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:17",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.005,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:21",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.01,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:26",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.015,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:30",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.02,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:35",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.025,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:39",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.03,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:43",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.035,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:47",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.04,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:51",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.045,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:22:55",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.05,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:20",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.005,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:23",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.01,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:27",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.015,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:31",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.02,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:34",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.025,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:38",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.03,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:42",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.035,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:46",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.04,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:50",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.045,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:54:53",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.05,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:57:37",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.005,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:57:41",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.01,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:57:45",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.015,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:57:48",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.02,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:57:52",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.025,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:57:56",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.03,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:58:00",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.035,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:58:03",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.04,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:58:08",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.045,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 03:58:12",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.05,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 04:14:46",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92621.3,
+        "size": 0.165,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 04:15:03",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92621.29,
+        "size": 0.165,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 04:15:21",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92613.52,
+        "size": 0.165,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 04:20:57",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92630.98,
+        "size": 0.172,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 04:21:36",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92594.48,
+        "size": 0.172,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 04:22:16",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92605.36,
+        "size": 0.172,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 10:41:59",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92015.0,
+        "size": 1.8670693780274962e-05,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 10:42:22",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92935.15,
+        "size": 1.8670693780274962e-05,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 10:42:25",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92030.0,
+        "size": 1.8667650637748566e-05,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 10:42:50",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92950.3,
+        "size": 1.8667650637748566e-05,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 10:42:54",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92045.0,
+        "size": 1.8664608487066116e-05,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 10:43:17",
+        "pair": "BTC/USDT",
+        "side": "buy",
+        "price": 92965.45,
+        "size": 1.8664608487066116e-05,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 11:52:10",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 0.5471,
+        "size": 25.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 11:52:10",
+        "pair": "BTC/USDT",
+        "side": "sell",
+        "price": 92500.55,
+        "size": 0.15,
+        "result": "closed"
+    },
+    {
+        "timestamp": "2026-01-19 13:19:53",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.005,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:19:56",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.01505,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:07",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.030276,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:09",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.050881,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:11",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.077153,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:13",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.109468,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:16",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.148299,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:18",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.194231,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:20",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.247972,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:20:23",
+        "pair": "XRP/USDT",
+        "side": "buy",
+        "price": 1.31037,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:00",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 126.01,
+        "size": 0.012,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:02",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 126.01,
+        "size": 0.012,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:06",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 126.64005,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:09",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 127.90645,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:11",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 129.825047,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:13",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 132.421548,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:15",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 135.732087,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:18",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 139.80405,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:20",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 144.697191,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:31",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 150.485079,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:42",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 157.256907,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:30:44",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 165.119753,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:12",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 134.58,
+        "size": 0.011,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:32",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 134.58,
+        "size": 0.011,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:45",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 135.2529,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:47",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 136.605429,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:49",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 138.65451,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:51",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 141.427601,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:54",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 144.963291,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:56",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 149.312189,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:31:59",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 154.538116,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:32:01",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 160.719641,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:32:04",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 167.952024,
+        "size": 1.0,
+        "result": "open"
+    },
+    {
+        "timestamp": "2026-01-19 13:32:06",
+        "pair": "SOL/USDT",
+        "side": "buy",
+        "price": 176.349626,
+        "size": 1.0,
+        "result": "open"
     }
 ]

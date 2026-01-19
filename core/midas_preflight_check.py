@@ -1,58 +1,80 @@
 import os
-import sys
 import requests
+import time
 from dotenv import load_dotenv
 
-# === Ensure Python finds the project root ===
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+# ======================================================
+# 🧩 LOAD ENVIRONMENT VARIABLES
+# ======================================================
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ENV_PATH = os.path.join(BASE_DIR, ".env")
 
-# === Load .env file (both locally and on Render) ===
-env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
-
-if os.path.exists(env_path):
-    load_dotenv(dotenv_path=env_path)
-    print("✅ Local .env file loaded successfully.")
+if os.path.exists(ENV_PATH):
+    load_dotenv(ENV_PATH)
+    print("✅ Environment loaded successfully.")
 else:
-    print("🌐 Running in hosted environment (Render or similar).")
+    print("⚠️ No .env file found in project root.")
 
-# === Verify environment variables ===
-REQUIRED_VARS = [
-    "TELEGRAM_BOT_TOKEN",
-    "TELEGRAM_CHAT_ID",
-    "PAIR",
-    "MODE",
-]
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+ENABLE_TELEGRAM_UPDATES = os.getenv("ENABLE_TELEGRAM_UPDATES", "True").lower() == "true"
 
-missing = [v for v in REQUIRED_VARS if not os.getenv(v)]
-
-if missing:
-    print(f"❌ Missing environment variables: {', '.join(missing)}")
+# ======================================================
+# 🌐 BUILD TELEGRAM API ENDPOINT
+# ======================================================
+if TELEGRAM_BOT_TOKEN:
+    TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
 else:
-    print("✅ All required environment variables found.")
+    TELEGRAM_API_URL = None
+    print("❌ TELEGRAM_BOT_TOKEN not set in .env")
 
-# ------------------------------------------------------------
-# 💬 Test Telegram Bot
-# ------------------------------------------------------------
-try:
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+# ======================================================
+# ✉️ SEND TELEGRAM MESSAGE (With Retry Logic)
+# ======================================================
+def send_telegram_message(message: str, retry_attempts: int = 3, timeout: int = 10):
+    """
+    Sends a message to the configured Telegram chat.
+    Retries on network failure up to retry_attempts times.
+    """
+    if not TELEGRAM_API_URL or not TELEGRAM_CHAT_ID:
+        print("⚠️ Telegram credentials missing or not loaded from environment.")
+        return False
 
-    if not bot_token or not chat_id:
-        raise ValueError("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID.")
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": message,
+        "parse_mode": "HTML"
+    }
 
-    message = "✅ MIDAS Preflight Check: Telegram connection OK."
-    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    res = requests.post(url, data={"chat_id": chat_id, "text": message})
+    for attempt in range(1, retry_attempts + 1):
+        try:
+            response = requests.post(TELEGRAM_API_URL, data=payload, timeout=timeout)
+            if response.status_code == 200:
+                print(f"📨 Telegram alert sent: {message[:50]}{'...' if len(message) > 50 else ''}")
+                return True
+            else:
+                print(f"⚠️ Telegram API error ({response.status_code}): {response.text}")
+        except requests.exceptions.Timeout:
+            print(f"⚠️ Telegram timeout (attempt {attempt}/{retry_attempts}) — retrying...")
+        except Exception as e:
+            print(f"❌ Telegram send failed (attempt {attempt}/{retry_attempts}): {e}")
 
-    if res.status_code == 200:
-        print("✅ Telegram message sent successfully.")
+        time.sleep(2)  # short pause before retry
+
+    print("❌ Telegram communication failed after all retries.")
+    return False
+
+# ======================================================
+# 🧪 TEST TELEGRAM CONNECTION (Optional Manual Run)
+# ======================================================
+if __name__ == "__main__":
+    print("🔧 Testing Telegram connection...")
+
+    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+        success = send_telegram_message("✅ MIDAS Telegram connection test successful!")
+        if success:
+            print("🎉 Telegram test message sent successfully.")
+        else:
+            print("⚠️ Telegram message failed. Please check your chat ID or bot token.")
     else:
-        print(f"⚠️ Telegram error: {res.text}")
-
-except Exception as e:
-    print(f"⚠️ Telegram error: {e}")
-
-# ------------------------------------------------------------
-# 🎯 Final Status
-# ------------------------------------------------------------
-print("\n🎯 MIDAS Preflight Check Complete.\n")
+        print("⚠️ Telegram credentials missing or invalid in .env.")
