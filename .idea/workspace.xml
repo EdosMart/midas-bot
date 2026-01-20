@@ -5,22 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4da26a31-ca5d-497f-9d0a-00948ecb4bc8" name="Changes" comment="Fix: updated requirements.txt for Render compatibility">
-      <change afterPath="$PROJECT_DIR$/.env.template" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/data_safety_check.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/test_midas_simulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/test_env_path.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_capital_tracker.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_capital_tracker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_daily_summary.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_daily_summary.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_dashboard.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_live_trading.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_live_trading.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_logger.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_preflight_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_preflight_check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/midas_smart_order.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_smart_order.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/midas_telegram.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/midas_telegram.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/trade_log.json" beforeDir="false" afterPath="$PROJECT_DIR$/core/trade_log.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/capital_tracker.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/capital_tracker.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/daily_summary.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/daily_summary.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -1,80 +1,64 @@
-# ======================================================
-# 📬 MIDAS Telegram Messaging Module
-# Provides robust message delivery with retries and
-# connection handling to avoid dropped alerts.
-# ======================================================
-
 import os
 import time
 import requests
+from dotenv import load_dotenv
 
 # ======================================================
-# 🔧 CONFIGURATION
+# 🌍 LOAD ENVIRONMENT VARIABLES
 # ======================================================
+env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+load_dotenv(env_path)
 
-TELEGRAM_BOT_TOKEN = os.getenv("8152460819:AAF_se8ZXk6w2cjwleTrUVPoX3FaCCSesXI")
-TELEGRAM_CHAT_ID = os.getenv("970989479")
-
-BASE_URL = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+ENABLE_UPDATES = os.getenv("ENABLE_TELEGRAM_UPDATES", "False").lower() == "true"
 
 # ======================================================
-# ✉️ SEND TELEGRAM MESSAGE (With Auto-Retry)
+# 🧩 BUILD TELEGRAM API ENDPOINT
 # ======================================================
+if BOT_TOKEN:
+    TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+else:
+    TELEGRAM_API_URL = None
 
-def send_telegram_message(message: str, retry_attempts: int = 3, timeout: int = 20):
-    """
-    Sends a Telegram message with retry logic and timeout handling.
-    Safe to call from anywhere in the MIDAS engine.
-    """
 
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+# ======================================================
+# 📨 SEND TELEGRAM MESSAGE (With Auto-Retry)
+# ======================================================
+def send_telegram_message(message: str, retry_attempts: int = 3, timeout: int = 10):
+    """Sends a Telegram message with retries and error handling."""
+    if not BOT_TOKEN or not CHAT_ID:
         print("⚠️ Telegram credentials missing or not loaded from environment.")
         return False
 
-    data = {
-        "chat_id": TELEGRAM_CHAT_ID,
+    payload = {
+        "chat_id": CHAT_ID,
         "text": message,
-        "parse_mode": "HTML"  # allow emojis & simple formatting
+        "parse_mode": "Markdown",
     }
 
-    for attempt in range(1, retry_attempts + 1):
+    for attempt in range(retry_attempts):
         try:
-            response = requests.post(BASE_URL, data=data, timeout=timeout)
-
-            # ✅ Success
+            response = requests.post(TELEGRAM_API_URL, data=payload, timeout=timeout)
             if response.status_code == 200:
-                print(f"📨 Telegram alert sent (Attempt {attempt}/{retry_attempts}): {message[:70]}")
+                print("✅ Telegram message sent successfully.")
                 return True
-
-            # ⚠️ Rate-limited or API error
-            elif response.status_code == 429:
-                retry_after = response.json().get("parameters", {}).get("retry_after", 5)
-                print(f"⚠️ Rate limited by Telegram. Retrying in {retry_after}s...")
-                time.sleep(retry_after)
-
             else:
-                print(f"⚠️ Telegram API error ({response.status_code}): {response.text}")
+                print(f"⚠️ Telegram send failed: {response.text}")
+        except requests.RequestException as e:
+            print(f"⚠️ Network error on attempt {attempt + 1}: {e}")
+        time.sleep(2)
 
-        except requests.exceptions.Timeout:
-            print(f"⏳ Telegram send timeout (attempt {attempt}/{retry_attempts}) — retrying...")
-            time.sleep(3)
-
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Telegram send failed (attempt {attempt}/{retry_attempts}): {e}")
-            time.sleep(3)
-
-    print("🚫 All Telegram send attempts failed after retries.")
+    print("❌ Telegram communication test failed after multiple attempts.")
     return False
 
 
 # ======================================================
-# 🧪 TEST FUNCTION (Run manually)
+# 🧪 TEST CONNECTION (Manual Run)
 # ======================================================
-
 if __name__ == "__main__":
     print("🔧 Testing Telegram connection...")
-    success = send_telegram_message("✅ MIDAS Telegram connection test successful!")
-    if success:
-        print("✅ Telegram communication verified.")
+    if send_telegram_message("✅ MIDAS Telegram connection test successful!"):
+        print("✅ Test completed successfully.")
     else:
         print("❌ Telegram communication test failed.")
